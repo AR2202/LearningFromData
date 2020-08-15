@@ -1,0 +1,79 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 708f34a8c4c7f50b1c28fea7e530a9d75e9602774ff9e5dc1280e3d942c7b48a
+
+name:           LearningFromData
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/annika/LearningFromData#readme>
+homepage:       https://github.com/annika/LearningFromData#readme
+bug-reports:    https://github.com/annika/LearningFromData/issues
+author:         annika
+maintainer:     annika.rings@freenet.de
+copyright:      GPL
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/annika/LearningFromData
+
+library
+  exposed-modules:
+      GradientDescent
+      LogisticRegression
+  other-modules:
+      Paths_LearningFromData
+  hs-source-dirs:
+      src/hw5
+      src
+  build-depends:
+      QuickCheck
+    , base >=4.7 && <5
+    , hspec
+    , lens
+    , mtl
+    , random
+  default-language: Haskell2010
+
+executable LearningFromData-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_LearningFromData
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      LearningFromData
+    , QuickCheck
+    , base >=4.7 && <5
+    , hspec
+    , lens
+    , mtl
+    , random
+  default-language: Haskell2010
+
+test-suite LearningFromData-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_LearningFromData
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      LearningFromData
+    , QuickCheck
+    , base >=4.7 && <5
+    , hspec
+    , lens
+    , mtl
+    , random
+  default-language: Haskell2010
