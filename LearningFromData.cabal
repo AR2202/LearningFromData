@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 708f34a8c4c7f50b1c28fea7e530a9d75e9602774ff9e5dc1280e3d942c7b48a
+-- hash: accf01893e3bb0009a28e4353f648d012a5e1d1d4419d26e8b8e3620e8b47ae5
 
 name:           LearningFromData
 version:        0.1.0.0
@@ -29,10 +29,12 @@ library
   exposed-modules:
       GradientDescent
       LogisticRegression
+      PLA
   other-modules:
       Paths_LearningFromData
   hs-source-dirs:
       src/hw5
+      src/hw1
       src
   build-depends:
       QuickCheck

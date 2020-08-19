@@ -30,6 +30,7 @@ dependencies:
 library:
   source-dirs: 
     - src/hw5
+    - src/hw1
     - src
 
 executables:
