@@ -5,9 +5,6 @@ module LogisticRegression
 m,
 b,
 Point(..),
-runReader,
-epoch,
-weightReader,
 createRandomPoints,
 trainAndTest
 
@@ -53,7 +50,6 @@ b :: Point -> Point -> Float
 b (x1,x2) (z1,z2) = x2 -x1 *(x2-z2)/(x1-z1)
 
 -- | Takes 2 Points and returns the function of a line connecting them
-line :: Point -> Point -> (Float -> Float)
 line point1 point2 = \x -> m point1 point2 * x + b point1 point2
 
 -----------------------------------
@@ -72,69 +68,61 @@ prod yn (x0,x1,x2)  = (x0*yn,x1*yn,x2*yn)
 point2weight :: Point -> Weight
 point2weight (x1,x2) =(1,x1,x2)
 
+-----------------------------------
+-- creating label and calculating error
+------------------------------------
+
 -- | looks up the label of the point by applying the target function
-y :: (Float -> Float) -> Point -> Float
+y :: (Float -> Float) -> Point -> Label
 y yLine (x1,x2) = if yLine x1 < x2 then (-1) else 1
 
 -- | The CrossEntropy error of one point
-crossEntropy1
-  :: (Float -> Float) -> Weight -> (Float, Float) -> Float
-crossEntropy1 yLine w x = log (1+ exp(-1*y1 *dotProd xw w))
-    where y1 = y yLine x
-          xw = point2weight x
+crossEntropy1'
+  ::  Weight -> LabelledPoint -> Float
+crossEntropy1' w (LabelledPoint x y1) = log (1+ exp(-1*y1 *dotProd xw w))
+    where xw = point2weight x
+
 
  -- | The CrossEntropy error of a list of points 
-crossEntropy
-  :: (Float -> Float) -> Weight -> [(Float, Float)] -> Float
-crossEntropy yLine w points = (*) 0.01 $ sum $ map (crossEntropy1 yLine w) points
+crossEntropy'
+  ::  Weight -> [LabelledPoint] -> Float
+crossEntropy' w points = (*) 0.01 $ sum $ map (crossEntropy1' w) points
 
 -- | The gradient of the CrossEntropy with respect to the weight for one point
-dCrossEntropy1 :: (Float->Float) -> Weight -> Point -> Weight
-dCrossEntropy1 yLine w x = prod (-1/(1+ exp(y1* dotProd xw w)))(prod y1 xw ) 
-    where y1 = y yLine x
-          xw = point2weight x
-
+dCrossEntropy1' :: Weight -> LabelledPoint -> Weight
+dCrossEntropy1' w (LabelledPoint x y1) = prod (-1/(1+ exp(y1* dotProd xw w)))(prod y1 xw ) 
+    where xw = point2weight x
+-----------------------------------
+-- Training
+------------------------------------
 -- | The update function for the weight
-updateWeight
-  :: (Float -> Float)
-     -> Float -> Weight -> Point -> Weight
-updateWeight yLine  eta w x =  w - prod  eta (dCrossEntropy1 yLine w x) 
+updateWeight'
+  :: Float -> Weight -> LabelledPoint -> Weight
+updateWeight' eta w labelledpoint =  w - prod  eta (dCrossEntropy1' w labelledpoint) 
 
 -- | Performs 1 training epoch (one run through all training points)
-epoch
-  :: (Float -> Float) -> Float -> Weight -> [Point] -> Weight
-epoch yLine eta = foldl' (updateWeight yLine eta) 
+epoch'
+  :: Float -> Weight -> [LabelledPoint] -> Weight
+epoch' eta = foldl' (updateWeight' eta) 
 
--- | stores the target function and performs training, returning the weight and the number of epochs performed before convergence
-weightReader :: [Point] -> Reader (Float ->Float) (Weight,Int)
-weightReader points = do
-    targetFunc <-ask
-    let pointpermutations = pointPermutations points
-    let weightsEpochs = finalWeights 0.01 targetFunc 0.01 (0,0,0) pointpermutations 0
-    return weightsEpochs
-
--- | performs testing and returns the CrossEntropy error
-errReader :: [Point] -> Weight-> Reader (Float ->Float) Float
-errReader points weights = do
-    targetFunc <-ask
-    let testError = crossEntropy  targetFunc weights points
-    return testError
 
 -- | performs training epochs until the stop criterion for convergence is reached
-finalWeights
+finalWeights'
   :: Float
-     -> (Float -> Float)
      -> Float
      -> Weight
-     -> [[ Point]]
+     -> [[ LabelledPoint]]
      -> Int
      -> (Weight, Int)
-finalWeights stopcrit yLine eta weight0 pointpermutations epochs
+finalWeights' stopcrit eta weight0 pointpermutations epochs
     |vecval (weight1 -weight0)<stopcrit = (weight1,epochs)
-    |otherwise = finalWeights stopcrit yLine eta weight1 (tail  pointpermutations) (epochs+1)
+    |otherwise = finalWeights' stopcrit eta weight1 (tail  pointpermutations) (epochs+1)
         where 
-            weight1 = epoch yLine eta weight0 $head pointpermutations
+            weight1 = epoch' eta weight0 $head pointpermutations
             vecval (w0,w1,w2) = sqrt $ w0**2 + w1**2 + w2**2
+-----------------------------------
+-- Creating random data points
+------------------------------------
 
 -- |Creates a random Point between (-1,-1) and (1,1)
 createRandomPoint :: IO (Float, Float)
@@ -164,16 +152,19 @@ trainAndTest :: IO ()
 trainAndTest = do
     point1 <- createRandomPoint
     point2 <- createRandomPoint
-
     let target = line point1 point2
     trainpoints <- createRandomPoints 100
-    let (weights,epochs) = runReader (weightReader trainpoints)  target
+    let labelpoints x = LabelledPoint x (y target x)
+    let labelledpointsTrain = map labelpoints  trainpoints
+    let pointpermutations = pointPermutations labelledpointsTrain
+    let (weights,epochs) = finalWeights' 0.01 0.01 (0,0,0) pointpermutations 0
     putStr "Weights: "
     print weights
     putStr "Epochs: "
     print epochs
     testpoints <- createRandomPoints 100
-    let testError = runReader (errReader testpoints weights)  target
+    let labelledpointsTest = map labelpoints  testpoints
+    let testError = crossEntropy' weights labelledpointsTest
     putStr "Eout: "
     print testError
 
