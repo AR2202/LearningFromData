@@ -31,6 +31,9 @@ import Data.Traversable(for)
 
 type Weight = (Float,Float,Float)
 type Point = (Float,Float)
+type Label = Float
+data LabelledPoint = LabelledPoint {pointX::Point, label::Label} 
+    deriving (Show, Read, Eq)   
 
 instance Num Weight where
     (+) (x0,x1,x2) (w0,w1,w2) = (w0+x0,  w1+x1,  w2+x2)
@@ -74,11 +77,15 @@ y :: (Float -> Float) -> Point -> Float
 y yLine (x1,x2) = if yLine x1 < x2 then (-1) else 1
 
 -- | The CrossEntropy error of one point
+crossEntropy1
+  :: (Float -> Float) -> Weight -> (Float, Float) -> Float
 crossEntropy1 yLine w x = log (1+ exp(-1*y1 *dotProd xw w))
     where y1 = y yLine x
           xw = point2weight x
 
- -- | The CrossEntropy error of a list of points         
+ -- | The CrossEntropy error of a list of points 
+crossEntropy
+  :: (Float -> Float) -> Weight -> [(Float, Float)] -> Float
 crossEntropy yLine w points = (*) 0.01 $ sum $ map (crossEntropy1 yLine w) points
 
 -- | The gradient of the CrossEntropy with respect to the weight for one point
@@ -88,9 +95,14 @@ dCrossEntropy1 yLine w x = prod (-1/(1+ exp(y1* dotProd xw w)))(prod y1 xw )
           xw = point2weight x
 
 -- | The update function for the weight
+updateWeight
+  :: (Float -> Float)
+     -> Float -> Weight -> Point -> Weight
 updateWeight yLine  eta w x =  w - prod  eta (dCrossEntropy1 yLine w x) 
 
 -- | Performs 1 training epoch (one run through all training points)
+epoch
+  :: (Float -> Float) -> Float -> Weight -> [Point] -> Weight
 epoch yLine eta = foldl' (updateWeight yLine eta) 
 
 -- | stores the target function and performs training, returning the weight and the number of epochs performed before convergence
@@ -109,6 +121,14 @@ errReader points weights = do
     return testError
 
 -- | performs training epochs until the stop criterion for convergence is reached
+finalWeights
+  :: Float
+     -> (Float -> Float)
+     -> Float
+     -> Weight
+     -> [[ Point]]
+     -> Int
+     -> (Weight, Int)
 finalWeights stopcrit yLine eta weight0 pointpermutations epochs
     |vecval (weight1 -weight0)<stopcrit = (weight1,epochs)
     |otherwise = finalWeights stopcrit yLine eta weight1 (tail  pointpermutations) (epochs+1)
@@ -117,18 +137,21 @@ finalWeights stopcrit yLine eta weight0 pointpermutations epochs
             vecval (w0,w1,w2) = sqrt $ w0**2 + w1**2 + w2**2
 
 -- |Creates a random Point between (-1,-1) and (1,1)
+createRandomPoint :: IO (Float, Float)
 createRandomPoint = do
     rand1 :: Float <- randomRIO (-1,1)
     rand2 :: Float <- randomRIO (-1,1)
     return  (rand1,rand2)
 
 -- |Creates a list of n random Points between (-1,-1) and (1,1)
+createRandomPoints :: Int -> IO [(Float, Float)]
 createRandomPoints n  = do
     randList1 :: [Float] <- for [1 .. n] $ \_ -> randomRIO (-1,1)
     randList2 :: [Float] <- for [1 .. n] $ \_ -> randomRIO (-1,1)
     return $ zip randList1 randList2
 
  -- | creates an infinite list of permutations of the list provided as an argument  
+pointPermutations :: [a] -> [[a]]
 pointPermutations = cycle . permutations 
 
 ---------------------------------------------------------------
@@ -137,6 +160,7 @@ pointPermutations = cycle . permutations
 -------------------------------------------------------------------
 
 -- | performs the whole training and testing loop, printing the weights, epochs and the test error
+trainAndTest :: IO ()
 trainAndTest = do
     point1 <- createRandomPoint
     point2 <- createRandomPoint

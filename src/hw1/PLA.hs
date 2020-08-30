@@ -35,7 +35,7 @@ makeLenses ''Point'
 
 instance Num Weight where
     (+) (x0,x1,x2) (w0,w1,w2) = (w0+x0,  w1+x1,  w2+x2)
-    (-) (x0,x1,x2)(w0,w1,w2)=(x0-w0,x1-w1,x2-w2)
+    (-) (x0,x1,x2)(w0,w1,w2) = (x0-w0,x1-w1,x2-w2)
     (*) (x0,x1,x2) (w0,w1,w2) = (w2*x1 - w1*x2, w2*x0 - w0*x2,w1*x0-w0*x1)
     negate (w0,w1,w2)=(negate w0,negate w1, negate w2)
     abs (w0,w1,w2) = (abs w0, abs w1, abs w2)
