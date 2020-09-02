@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: accf01893e3bb0009a28e4353f648d012a5e1d1d4419d26e8b8e3620e8b47ae5
+-- hash: 4034c861efaecd6ecb92a650565ae0d3a8e9d5ccbad92da2139540259db4e378
 
 name:           LearningFromData
 version:        0.1.0.0
@@ -30,11 +30,13 @@ library
       GradientDescent
       LogisticRegression
       PLA
+      CoinFlips
   other-modules:
       Paths_LearningFromData
   hs-source-dirs:
       src/hw5
       src/hw1
+      src/hw2
       src
   build-depends:
       QuickCheck
@@ -43,6 +45,7 @@ library
     , lens
     , mtl
     , random
+    , split
   default-language: Haskell2010
 
 executable LearningFromData-exe
@@ -60,6 +63,7 @@ executable LearningFromData-exe
     , lens
     , mtl
     , random
+    , split
   default-language: Haskell2010
 
 test-suite LearningFromData-test
@@ -78,4 +82,5 @@ test-suite LearningFromData-test
     , lens
     , mtl
     , random
+    , split
   default-language: Haskell2010

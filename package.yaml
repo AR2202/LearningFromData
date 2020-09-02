@@ -26,11 +26,13 @@ dependencies:
 - mtl
 - random
 - lens
+- split
 
 library:
   source-dirs: 
     - src/hw5
     - src/hw1
+    - src/hw2
     - src
 
 executables:
