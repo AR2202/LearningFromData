@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4034c861efaecd6ecb92a650565ae0d3a8e9d5ccbad92da2139540259db4e378
+-- hash: c8eec82ed0cc6108bed783cf93533b5e39cc0119869bfe5758383c7150686b96
 
 name:           LearningFromData
 version:        0.1.0.0
@@ -31,6 +31,7 @@ library
       LogisticRegression
       PLA
       CoinFlips
+      LinearRegression
   other-modules:
       Paths_LearningFromData
   hs-source-dirs:
@@ -41,6 +42,7 @@ library
   build-depends:
       QuickCheck
     , base >=4.7 && <5
+    , hmatrix
     , hspec
     , lens
     , mtl
@@ -59,6 +61,7 @@ executable LearningFromData-exe
       LearningFromData
     , QuickCheck
     , base >=4.7 && <5
+    , hmatrix
     , hspec
     , lens
     , mtl
@@ -78,6 +81,7 @@ test-suite LearningFromData-test
       LearningFromData
     , QuickCheck
     , base >=4.7 && <5
+    , hmatrix
     , hspec
     , lens
     , mtl

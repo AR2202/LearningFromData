@@ -27,6 +27,7 @@ dependencies:
 - random
 - lens
 - split
+- hmatrix
 
 library:
   source-dirs: 
