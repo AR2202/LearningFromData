@@ -108,6 +108,7 @@ trainLinReg = do
 average :: [R] -> R
 average xs = sum xs / fromIntegral (length xs)
 
+-- | average of in-sample and out-of-sample error, calculated from a list of pairs and returned as a pair.
 averageErrors :: [(R,R)]->(R,R)
 averageErrors pairs = (avFst,avSnd)
     where avFst = average $ map fst  pairs
