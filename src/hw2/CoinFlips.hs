@@ -19,9 +19,9 @@ import Data.List
 import Data.List.Split (chunksOf)
 import Control.Monad (replicateM)
 
-----------------------------------------------------
--- Solutions to homework 2 of "Learning from data"
-----------------------------------------------------
+--------------------------------------------------------------
+-- Solutions to homework 2 of "Learning from data" question 1
+--------------------------------------------------------------
 
 -----------------------------------------------------
 -- Flipping coins

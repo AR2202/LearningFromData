@@ -1,7 +1,8 @@
+
+{-#LANGUAGE FlexibleContexts#-}
 module LinearRegression
 (trainLinReg,
-createVectorY,
-createMatrixX
+avError
 
 )
 where
@@ -10,8 +11,11 @@ import Numeric.LinearAlgebra.Data
 import Numeric.LinearAlgebra.HMatrix
 import System.Random
 import Data.Traversable (for)
+import Control.Monad(replicateM)
 
-
+--------------------------------------------------------------
+-- Solutions to homework 2 of "Learning from data" question 5-6
+--------------------------------------------------------------
 
 ---------------------------------------------
 -- Creating the line for the target function
@@ -65,15 +69,50 @@ createMatrixX listOfPoints = matrix 3 listOfNumbers
 
 linearRegressionWeight matrixOfInputData vectorOfLabels = pinv matrixOfInputData #> vectorOfLabels
 
+-- | Squared error
+squaredError:: Matrix R -> Vector R -> Vector R -> R
+squaredError matrixOfInputData vectorOfLabels weight = 1/fromIntegral n * dot v v
+    where v = signum (matrixOfInputData #> weight) - vectorOfLabels
+          n = size vectorOfLabels
 
-trainLinReg :: IO ()
+-- | Classification error for linear Regression (i.e. fraction of misclassified points)
+linRegClassificationError matrixOfInputData vectorOfLabels weight = numberMisclassified/totalDatapoints 
+    where numberMisclassified = norm_0 $ signum (matrixOfInputData #> weight) - vectorOfLabels
+          totalDatapoints = fromIntegral $ size vectorOfLabels
+
+----------------------------------------------
+-- training and testing the Linear Regression model
+
+-- | training linear Regression on random dataset of 100 points and testing on 1000 points and returning a pair of in-Sample and out-of-sample error
+trainLinReg :: IO (R,R)
 trainLinReg = do
     point1 <- createRandomPoint
     point2 <- createRandomPoint
     let target = line point1 point2
     trainpoints <- createRandomPoints 100
-    let matrixX = createMatrixX trainpoints
-    let vectorY = createVectorY target trainpoints
-    let weights = linearRegressionWeight matrixX vectorY
-    putStr "Weights: "
-    print weights
+    testpoints <- createRandomPoints 1000
+    let trainX = createMatrixX trainpoints
+    let trainY = createVectorY target trainpoints
+    let weights = linearRegressionWeight trainX trainY
+    let testX = createMatrixX testpoints
+    let testY = createVectorY target testpoints
+
+    let inSampleError = linRegClassificationError trainX trainY weights
+    let outOfSampleError = linRegClassificationError testX testY weights
+    return (inSampleError, outOfSampleError)
+---------------------------------------------------------
+-- averaging several runs of the algorithm
+---------------------------------------------------------
+
+-- | average in a list of numbers
+average :: [R] -> R
+average xs = sum xs / fromIntegral (length xs)
+
+averageErrors :: [(R,R)]->(R,R)
+averageErrors pairs = (avFst,avSnd)
+    where avFst = average $ map fst  pairs
+          avSnd = average $ map snd  pairs
+
+-- |pair of average in-sample and out-of-sample error in n runs of linear Regression on n different sets of points
+avError :: Int -> IO ()
+avError n = putStrLn .( "In-sample error, out-of-sample error: " ++).show =<< fmap averageErrors (replicateM n trainLinReg)
