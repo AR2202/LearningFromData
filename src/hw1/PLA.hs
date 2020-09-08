@@ -5,7 +5,8 @@ module PLA
 Weight(..),
 Point'(..),
 viewX,
-trainPLA
+trainPLA,
+trainPLAWithInitial
 )
 where
 import Control.Monad.Reader
@@ -15,6 +16,7 @@ import Data.Traversable(for)
 import Control.Lens
 import Control.Lens.Operators
 import Control.Lens.Combinators
+import Numeric.LinearAlgebra.Data
 
 --------------------------------
 --  Solutions to homework 1, problems 7-10 of
@@ -27,10 +29,10 @@ import Control.Lens.Combinators
 -- Types and Typeclass Instances
 --------------------------------
 
-type Weight = (Float,Float,Float)
-type Point = (Float,Float)
+type Weight = (R,R,R)
+type Point = (R,R)
 -- | To be used at a later stage - currently just a test
-data Point' = Point'{_x::Float,_y::Float}
+data Point' = Point'{_x::R,_y::R}
 makeLenses ''Point'
 
 instance Num Weight where
@@ -44,14 +46,14 @@ instance Num Weight where
 ---------------------------------------------
 -- Creating the line for the target function
 --------------------------------------------
-m :: Point -> Point -> Float
+m :: Point -> Point -> R
 m (x1,x2)(z1,z2) = (x2 - z2)/(x1 - z1)
 
-b :: Point -> Point -> Float
+b :: Point -> Point -> R
 b (x1,x2) (z1,z2) = x2 -x1 *(x2-z2)/(x1-z1)
 
 -- | Takes 2 Points and returns the function of a line connecting them
-line :: Point -> Point -> (Float -> Float)
+line :: Point -> Point -> (R -> R)
 line point1 point2 = \x -> m point1 point2 * x + b point1 point2
 
 -----------------------------------
@@ -59,11 +61,11 @@ line point1 point2 = \x -> m point1 point2 * x + b point1 point2
 ------------------------------------
 
 -- | The dot product
-dotProd :: Weight -> Weight -> Float
+dotProd :: Weight -> Weight -> R
 dotProd (x0,x1,x2) (w0,w1,w2) = w0*x0 + w1*x1 + w2*x2
 
 -- | Scalar multiplication of the weight vecotr
-prod :: Float -> Weight  -> Weight
+prod :: R -> Weight  -> Weight
 prod lambda (x0,x1,x2)  = (x0*lambda,x1*lambda,x2*lambda)
 
 -- | Converting a point to a weight by adding the first coordinate (1)
@@ -71,7 +73,7 @@ point2weight :: Point -> Weight
 point2weight (x1,x2) =(1,x1,x2)
 
 -- | looks up the label of the point by applying the target function
-yn :: (Float -> Float) -> Point -> Float
+yn :: (R -> R) -> Point -> R
 yn yLine (x1,x2) = if yLine x1 < x2 then (-1) else 1
 
 
@@ -94,24 +96,29 @@ pla yLine w niter gen xs
           (number,nextRandom) = randomR randomRange gen
 
 -- | stores the target function and performs training, returning the weight and the number of epochs performed before convergence
-weightReader' :: [Point] -> StdGen-> Reader (Float ->Float) (Weight,Int)
+weightReader' :: [Point] -> StdGen-> Reader (R ->R) (Weight,Int)
 weightReader' points gen = do
     targetFunc <-ask
     let weightsEpochs = pla targetFunc (0,0,0) 0 gen points
     return weightsEpochs
 
-
+-- | stores the target function and performs training, returning the weight and the number of epochs performed before convergence
+weightReader :: [Point] -> StdGen-> Weight->Reader (R ->R) (Weight,Int)
+weightReader points gen initialWeights= do
+    targetFunc <-ask
+    let weightsEpochs = pla targetFunc initialWeights 0 gen points
+    return weightsEpochs
 
 -- |Creates a random Point between (-1,-1) and (1,1)
 createRandomPoint = do
-    rand1 :: Float <- randomRIO (-1,1)
-    rand2 :: Float <- randomRIO (-1,1)
+    rand1 :: R <- randomRIO (-1,1)
+    rand2 :: R <- randomRIO (-1,1)
     return  (rand1,rand2)
 
 -- |Creates a list of n random Points between (-1,-1) and (1,1)
 createRandomPoints n  = do
-    randList1 :: [Float] <- for [1 .. n] $ \_ -> randomRIO (-1,1)
-    randList2 :: [Float] <- for [1 .. n] $ \_ -> randomRIO (-1,1)
+    randList1 :: [R] <- for [1 .. n] $ \_ -> randomRIO (-1,1)
+    randList2 :: [R] <- for [1 .. n] $ \_ -> randomRIO (-1,1)
     return $ zip randList1 randList2
 
  -- | creates an infinite list of permutations of the list provided as an argument  
@@ -142,5 +149,12 @@ trainPLA nPoints = do
     let prob = fromIntegral misclassifiedTestPoints/1000
     putStr "Probability f /= g: "
     print prob
+
+-- | performs the PLA with a set of initial weights, training points and a target function
+trainPLAWithInitial :: (R, R, R) -> [Point] -> (R -> R) -> IO (Weight,Int)
+trainPLAWithInitial initialWeights trainPoints target = do
+    stdgen <- getStdGen
+    let (weights,epochs) = runReader (weightReader trainPoints stdgen initialWeights)  target
+    return(weights,epochs)
 
 
