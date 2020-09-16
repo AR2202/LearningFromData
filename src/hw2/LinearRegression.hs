@@ -1,9 +1,18 @@
-
+{-#LANGUAGE ScopedTypeVariables #-}
 {-#LANGUAGE FlexibleContexts#-}
 module LinearRegression
 (trainLinReg,
+trainAndTestLinReg,
+trainLinRegWNoise,
 avError,
-linRegAsInitialForPLA
+linRegAsInitialForPLA,
+createVectorY,
+createRandomPoints,
+flipLabels,
+linearRegressionWeight,
+linRegClassificationError,
+testLinRegWNoise,
+createMatrixX
 
 )
 where
@@ -62,14 +71,24 @@ y :: (R -> R) -> (R,R) -> R
 y yLine (x1,x2) = if yLine x1 < x2 then (-1) else 1
 
 -- | Creates the vector of labels using the target function 'yLine' and a list of data points
-createVectorY :: (R -> R) -> [(R,R)] -> Vector R
-createVectorY yLine listOfPoints = vector $ map (y yLine) listOfPoints
+createVectorY :: ((R,R) -> R) -> [(R,R)] -> Vector R
+createVectorY target listOfPoints = vector $ map target listOfPoints
 
 -- | Creates the matrix X from a list of data points
 createMatrixX :: [(R,R)] -> Matrix R
 createMatrixX listOfPoints = matrix 3 listOfNumbers
     where listOfNumbers = concat [[1,a,b]| (a,b)<-listOfPoints]
 
+flipLabels :: Float -> Vector R -> IO (Vector R)
+flipLabels noiselevel labelvector = do
+    gen <- getStdGen
+    let numLabels = size labelvector
+    let randnums :: [Int] = randomRs (1,numLabels) gen 
+    
+    let toFlip = take (floor (noiselevel * fromIntegral numLabels)) randnums
+    let flipVector = vector [if x `elem` toFlip then (-1) else 1 | x <-[1..numLabels]]
+    let flippedLabels = labelvector * flipVector
+    return flippedLabels
 --------------------------------------------------------
 -- Linear Regression algorithm
 --------------------------------------------------------
@@ -98,30 +117,37 @@ makeTargetFunction = do
     let target = line point1 point2
     return target
 
--- | training linear Regression on random dataset of 100 points and testing on 1000 points and returning a pair of in-Sample and out-of-sample error
---trainLinReg :: IO (Matrix R,Vector R,Vector R)
-trainLinReg target n = do    
+-- | training linear Regression on random dataset of n noisy points and returning (weights, in-Sample error, trainingpoints) 
+trainLinRegWNoise :: ((R,R) -> R) -> Int -> Float -> ([(R,R)] -> Matrix R )-> IO (Vector R, R, [(R, R)])
+trainLinRegWNoise target n noiselevel transformFunction = do    
     trainpoints <- createRandomPoints n
     
     let trainX = createMatrixX trainpoints
     let trainY = createVectorY target trainpoints
-    let weights = linearRegressionWeight trainX trainY
-    let inSampleError = linRegClassificationError trainX trainY weights
+    trainYNoisy <- flipLabels noiselevel trainY
+    let weights = linearRegressionWeight trainX trainYNoisy
+    let inSampleError = linRegClassificationError trainX trainYNoisy weights
     return (weights,inSampleError,trainpoints)
 
-testLinReg target n weights= do
-    testpoints <- createRandomPoints n
-    let testX = createMatrixX testpoints
-    let testY = createVectorY target testpoints
+-- | training linear Regression on random dataset of n noisy points and returning (weights, in-Sample error, trainingpoints) 
+trainLinReg :: (R -> R) -> Int -> ([(R,R)] -> Matrix R ) -> IO (Vector R, R, [(R, R)])
+trainLinReg target n  transformFunction = trainLinRegWNoise (y target) n 0 transformFunction
 
-    
-    let outOfSampleError = linRegClassificationError testX testY weights
+testLinReg target n transformFunction weights= testLinRegWNoise (y target) n 0 transformFunction weights 
+
+
+testLinRegWNoise target n noiselevel transformFunction weights  = do
+    testpoints <- createRandomPoints n
+    let testX = transformFunction testpoints
+    let testY = createVectorY target testpoints
+    testYNoisy <- flipLabels noiselevel testY    
+    let outOfSampleError = linRegClassificationError testX testYNoisy weights
     return  outOfSampleError
 
 trainAndTestLinReg = do
     target<-makeTargetFunction
-    (weights,inSampleError,_)<-trainLinReg target 100
-    outOfSampleError<- testLinReg target 1000 weights
+    (weights,inSampleError,_)<-trainLinReg target 100 createMatrixX
+    outOfSampleError<- testLinReg target 1000 createMatrixX weights
     return (inSampleError,outOfSampleError)
 
 
@@ -154,7 +180,7 @@ listToTuple _ = Nothing
 linRegAsInitialForPLA :: IO()
 linRegAsInitialForPLA = do
     target<-makeTargetFunction
-    (initialweightsVec,_,trainPoints)<-trainLinReg target 10
+    (initialweightsVec,_,trainPoints)<-trainLinReg target 10 createMatrixX
     let maybeInitialWeights = listToTuple $ toList initialweightsVec
     let initialWeights = fromMaybe (0,0,0) maybeInitialWeights
     (finalWeights,epochs)<-trainPLAWithInitial initialWeights trainPoints target

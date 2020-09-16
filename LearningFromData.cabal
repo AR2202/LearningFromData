@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c8eec82ed0cc6108bed783cf93533b5e39cc0119869bfe5758383c7150686b96
+-- hash: ee4f8cb447bc7240ad6112ee6c6a6158256a11f26ed533075023873990d4e9fb
 
 name:           LearningFromData
 version:        0.1.0.0
@@ -32,6 +32,7 @@ library
       PLA
       CoinFlips
       LinearRegression
+      NonlinearTransform
   other-modules:
       Paths_LearningFromData
   hs-source-dirs:
