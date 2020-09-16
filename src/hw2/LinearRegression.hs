@@ -122,7 +122,7 @@ trainLinRegWNoise :: ((R,R) -> R) -> Int -> Float -> ([(R,R)] -> Matrix R )-> IO
 trainLinRegWNoise target n noiselevel transformFunction = do    
     trainpoints <- createRandomPoints n
     
-    let trainX = createMatrixX trainpoints
+    let trainX = transformFunction trainpoints
     let trainY = createVectorY target trainpoints
     trainYNoisy <- flipLabels noiselevel trainY
     let weights = linearRegressionWeight trainX trainYNoisy
