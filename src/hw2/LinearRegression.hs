@@ -93,6 +93,8 @@ flipLabels noiselevel labelvector = do
 -- Linear Regression algorithm
 --------------------------------------------------------
 
+-- | returns the weights determined by linear regression on the training data
+linearRegressionWeight :: Matrix R -> Vector R -> Vector R
 linearRegressionWeight matrixOfInputData vectorOfLabels = pinv matrixOfInputData #> vectorOfLabels
 
 -- | Squared error
@@ -102,14 +104,16 @@ squaredError matrixOfInputData vectorOfLabels weight = 1/fromIntegral n * dot v 
           n = size vectorOfLabels
 
 -- | Classification error for linear Regression (i.e. fraction of misclassified points)
+linRegClassificationError :: Matrix R -> Vector R -> Vector R -> R
 linRegClassificationError matrixOfInputData vectorOfLabels weight = numberMisclassified/totalDatapoints 
     where numberMisclassified = norm_0 $ signum (matrixOfInputData #> weight) - vectorOfLabels
           totalDatapoints = fromIntegral $ size vectorOfLabels
 
-----------------------------------------------
+--------------------------------------------------
 -- training and testing the Linear Regression model
+--------------------------------------------------
 
-
+-- | create the target function
 makeTargetFunction :: IO (R->R)
 makeTargetFunction = do
     point1 <- createRandomPoint
@@ -129,13 +133,17 @@ trainLinRegWNoise target n noiselevel transformFunction = do
     let inSampleError = linRegClassificationError trainX trainYNoisy weights
     return (weights,inSampleError,trainpoints)
 
--- | training linear Regression on random dataset of n noisy points and returning (weights, in-Sample error, trainingpoints) 
+-- | training linear Regression on random dataset of n noiseless points and returning (weights, in-Sample error, trainingpoints) 
 trainLinReg :: (R -> R) -> Int -> ([(R,R)] -> Matrix R ) -> IO (Vector R, R, [(R, R)])
 trainLinReg target n  transformFunction = trainLinRegWNoise (y target) n 0 transformFunction
 
+-- | evaluates linear Regression result on test data
+testLinReg :: (R -> R) -> Int -> ([(R,R)] -> Matrix R ) -> Vector R -> IO R
 testLinReg target n transformFunction weights= testLinRegWNoise (y target) n 0 transformFunction weights 
 
-
+-- | training linear Regression on random dataset of n noisy points and returning (weights, in-Sample error, trainingpoints) 
+testLinRegWNoise :: 
+    ((R,R) -> R) -> Int -> Float -> ([(R,R)] -> Matrix R )-> Vector R -> IO R
 testLinRegWNoise target n noiselevel transformFunction weights  = do
     testpoints <- createRandomPoints n
     let testX = transformFunction testpoints
@@ -144,6 +152,8 @@ testLinRegWNoise target n noiselevel transformFunction weights  = do
     let outOfSampleError = linRegClassificationError testX testYNoisy weights
     return  outOfSampleError
 
+-- | performs training and testing
+trainAndTestLinReg :: IO (R,R)
 trainAndTestLinReg = do
     target<-makeTargetFunction
     (weights,inSampleError,_)<-trainLinReg target 100 createMatrixX
@@ -177,6 +187,7 @@ listToTuple :: [a] -> Maybe (a,a,a)
 listToTuple (x:y:z:xs) = Just (x,y,z)
 listToTuple _ = Nothing
 
+-- | trains a perceptron wiht initial weights obtained by linear Regression
 linRegAsInitialForPLA :: IO()
 linRegAsInitialForPLA = do
     target<-makeTargetFunction
