@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ee4f8cb447bc7240ad6112ee6c6a6158256a11f26ed533075023873990d4e9fb
+-- hash: 24491bdb572ee695d994d3c6c0403b762e29f188e8c211764d04b4b85a94e564
 
 name:           LearningFromData
 version:        0.1.0.0
@@ -33,15 +33,18 @@ library
       CoinFlips
       LinearRegression
       NonlinearTransform
+      WeightDecay
   other-modules:
       Paths_LearningFromData
   hs-source-dirs:
       src/hw5
       src/hw1
       src/hw2
+      src/hw6
       src
   build-depends:
-      QuickCheck
+      HTTP
+    , QuickCheck
     , base >=4.7 && <5
     , hmatrix
     , hspec
@@ -59,7 +62,8 @@ executable LearningFromData-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      LearningFromData
+      HTTP
+    , LearningFromData
     , QuickCheck
     , base >=4.7 && <5
     , hmatrix
@@ -79,7 +83,8 @@ test-suite LearningFromData-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      LearningFromData
+      HTTP
+    , LearningFromData
     , QuickCheck
     , base >=4.7 && <5
     , hmatrix

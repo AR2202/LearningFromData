@@ -28,12 +28,14 @@ dependencies:
 - lens
 - split
 - hmatrix
+- HTTP
 
 library:
   source-dirs: 
     - src/hw5
     - src/hw1
     - src/hw2
+    - src/hw6
     - src
 
 executables:

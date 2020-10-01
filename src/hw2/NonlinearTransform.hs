@@ -1,7 +1,8 @@
 module NonlinearTransform (
 solution8,
 solution9,
-solution10
+solution10,
+createTransformedX2
 )
 where
 --------------------------------------------------------------
@@ -25,11 +26,17 @@ fstOfTriple :: (a,b,c) -> a
 fstOfTriple (a,_,_) = a
 
 -- | Creates the transformed matrix X with feature vectors (1,x1,x2,x1*x2,x1^2,x2^2) from a list of data points
-createTransformedX :: [(R,R)] -> Matrix R
-createTransformedX listOfPoints = matrix 6 listOfNumbers
-    where listOfNumbers = concat [[1,a,b,a*b,a^2,b^2]| (a,b)<-listOfPoints]
+createTransformedX :: Int -> ([(R,R)] -> [R])-> [(R,R)]-> Matrix R
+createTransformedX numFeatures transformfunction listOfPoints = matrix numFeatures listOfNumbers
+    where listOfNumbers = transformfunction listOfPoints
+        
+transformFunction1 = \listOfPoints -> concat [[1,a,b,a*b,a^2,b^2]| (a,b)<-listOfPoints]
 
+transformFunction2 = \listOfPoints -> concat [[1,a,b,a*b,a^2,b^2,abs(a-b),abs(a+b)]| (a,b)<-listOfPoints]
 
+createTransformedX1 listOfPoints = createTransformedX 6 transformFunction1 listOfPoints
+
+createTransformedX2 listOfPoints = createTransformedX 8 transformFunction2 listOfPoints
 
 -- | solution to Problem 8
 solution8 :: IO R
@@ -37,11 +44,11 @@ solution8 = fmap sndOfTriple $ trainLinRegWNoise targetf 1000 0.1 createMatrixX
 
 -- | solution to Problem 9
 solution9 :: IO (Vector R)
-solution9 = fmap fstOfTriple $ trainLinRegWNoise targetf 1000 0.1 createTransformedX
+solution9 = fmap fstOfTriple $ trainLinRegWNoise targetf 1000 0.1 createTransformedX1
 
 -- | solution to Problem 10
 solution10 :: IO R
-solution10 = solution9 >>= testLinRegWNoise targetf 1000 0.1 createTransformedX
+solution10 = solution9 >>= testLinRegWNoise targetf 1000 0.1 createTransformedX1
 
 
 
