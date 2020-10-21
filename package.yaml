@@ -36,6 +36,7 @@ library:
     - src/hw1
     - src/hw2
     - src/hw6
+    - src/hw7
     - src
 
 executables:

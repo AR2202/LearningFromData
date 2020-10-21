@@ -2,7 +2,9 @@ module NonlinearTransform (
 solution8,
 solution9,
 solution10,
-createTransformedX2
+createTransformedX2,
+createTransformedX,
+createTransformedXk
 )
 where
 --------------------------------------------------------------
@@ -34,10 +36,13 @@ transformFunction1 = \listOfPoints -> concat [[1,a,b,a*b,a^2,b^2]| (a,b)<-listOf
 
 transformFunction2 = \listOfPoints -> concat [[1,a,b,a*b,a^2,b^2,abs(a-b),abs(a+b)]| (a,b)<-listOfPoints]
 
+transformFunctionk k = \listOfPoints -> concat [take (k+1) [1,a,b,a^2,b^2,a*b,abs(a-b),abs(a+b)]| (a,b)<-listOfPoints]
+
 createTransformedX1 listOfPoints = createTransformedX 6 transformFunction1 listOfPoints
 
 createTransformedX2 listOfPoints = createTransformedX 8 transformFunction2 listOfPoints
 
+createTransformedXk k listOfPoints = createTransformedX (k+1) (transformFunctionk k) listOfPoints
 -- | solution to Problem 8
 solution8 :: IO R
 solution8 = fmap sndOfTriple $ trainLinRegWNoise targetf 1000 0.1 createMatrixX

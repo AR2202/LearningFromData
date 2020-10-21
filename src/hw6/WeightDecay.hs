@@ -7,7 +7,9 @@ module WeightDecay(
     testX,
     trainLinRegUnkownTarget,
     trainAndTestWithData,
-    trainAndTestWithRegularization
+    trainAndTestWithRegularization,
+    makeTransformedMatrix,
+    listToTuple'
 )
 where
 
@@ -59,9 +61,14 @@ makeDataMatrix inputdata = fmap (fmap makeMatrixX) inputdata
 makeTransformedMatrix2 inputdata = fmap (fmap makeMatrixX) inputdata
     where makeMatrixX lists = createTransformedX2 $ map (fromMaybe (0,0) .listToTuple') lists
 
+makeTransformedMatrix k inputdata = fmap (fmap makeMatrixX) inputdata
+    where makeMatrixX lists = createTransformedXk k $ map (fromMaybe (0,0) .listToTuple') lists
+
 trainXTransformed2   = makeTransformedMatrix2 traindata
 
 testXTransformed2   = makeTransformedMatrix2 testdata
+
+
 
 -- | Trains linear Regression from the data on the course website
 
