@@ -16,6 +16,7 @@ import Numeric.LinearAlgebra.HMatrix as HMatrix
 -- | Make a nonlinear Transformation of the first n data points of the input data
 makeTransformedFirstN k n inputdata = fmap (fmap makeMatrixX ) inputdata
     where makeMatrixX lists = createTransformedXk k $ map (fromMaybe (0,0) .listToTuple')$ take n lists
+
 -- | Make a nonlinear Transformation of the rest of the data points after the first n
 makeTransformedLastN k n inputdata = fmap (fmap makeMatrixX ) inputdata
     where makeMatrixX lists = createTransformedXk k $ map (fromMaybe (0,0) .listToTuple')$ drop n lists
@@ -31,8 +32,8 @@ trainYFirstn n = fmap ( fmap makeVectorY ) traindata
 
 trainYLastn n = fmap ( fmap makeVectorY ) traindata
     where makeVectorY lists = vector $ drop n $ map last lists
--- | Trains and validate linear Regression from the data on the course website, using the first n points for training and the rest for validation, performing non-linear transformation with k-dimensional features
 
+-- | Trains and validate linear Regression from the data on the course website, using the first n points for training and the rest for validation, performing non-linear transformation with k-dimensional features
 trainVal k n = do    
     matrixXTrain <- trainXFirstn k n
     matrixXVal <- trainXLastn k n
@@ -73,6 +74,7 @@ trainValAndTest k n = do
     putStr "Out of Sample Error: "
     print outOfSampleError
 
+-- | same as trainValAndTest, but the first n points are used for validation and the rest for training
 valTrainAndTest :: Int -> Int -> IO ()
 valTrainAndTest k n = do
     (weights,validationError,inSampleError) <- valTrain k n
@@ -84,6 +86,7 @@ valTrainAndTest k n = do
     putStr "Out of Sample Error: "
     print outOfSampleError
 
+-- | solution to problems 1 and 2
 solution1_2 :: IO ()
 solution1_2 = mapM_ ( \k -> do
     putStr " k ="
@@ -91,6 +94,7 @@ solution1_2 = mapM_ ( \k -> do
     trainValAndTest k 25)
      [3,4,5,6,7]
 
+-- | solution to problems 3 and 4
 solution3_4 :: IO ()
 solution3_4 = mapM_ ( \k -> do
     putStr " k ="

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 30aa9e5b3f52897741c1d70510619014cbd13f8d22964643173c7c32c8fbd60c
+-- hash: 712d5a12706accfa364f406cd07fbaa10467dbfff6b91457b5748ffc7698ad23
 
 name:           LearningFromData
 version:        0.1.0.0
@@ -34,6 +34,7 @@ library
       LinearRegression
       NonlinearTransform
       WeightDecay
+      SVM
       Validation
   other-modules:
       Paths_LearningFromData
