@@ -28,6 +28,8 @@ dependencies:
 - lens
 - split
 - hmatrix
+- hmatrix-quadprogpp
+- vector
 - HTTP
 
 library:

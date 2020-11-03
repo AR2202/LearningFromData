@@ -34,12 +34,15 @@ packages:
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
 #
-# extra-deps:
+extra-deps:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
+- git : https://github.com/alang9/hmatrix-quadprogpp.git
+  commit : 11bfc31aca10cfc312cb725acdf5e480ca859072
 #
-# extra-deps: []
+#extra-deps: 
+#- hmatrix-quadprogpp-0.4.0.0@sha256:2209e2d2995766fba607961fa7aa75adcfc4c41a94e54e62d44768e2090bcf56,1015
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

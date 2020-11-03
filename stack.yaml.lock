@@ -3,7 +3,21 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    cabal-file:
+      size: 1015
+      sha256: 2209e2d2995766fba607961fa7aa75adcfc4c41a94e54e62d44768e2090bcf56
+    name: hmatrix-quadprogpp
+    version: 0.4.0.0
+    git: https://github.com/alang9/hmatrix-quadprogpp.git
+    pantry-tree:
+      size: 444
+      sha256: c917f32049e179746fc7779172ed71e858ea8429feab30f9e00c62555b5fe536
+    commit: 11bfc31aca10cfc312cb725acdf5e480ca859072
+  original:
+    git: https://github.com/alang9/hmatrix-quadprogpp.git
+    commit: 11bfc31aca10cfc312cb725acdf5e480ca859072
 snapshots:
 - completed:
     size: 532380

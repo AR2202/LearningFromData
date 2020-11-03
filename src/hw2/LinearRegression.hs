@@ -12,7 +12,9 @@ flipLabels,
 linearRegressionWeight,
 linRegClassificationError,
 testLinRegWNoise,
-createMatrixX
+createMatrixX,
+makeTargetFunction,
+y
 
 )
 where

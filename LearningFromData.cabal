@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 712d5a12706accfa364f406cd07fbaa10467dbfff6b91457b5748ffc7698ad23
+-- hash: 43dad454188bcd511bc36589244915e2567f4c2b17eca4da3531aab11538e5a6
 
 name:           LearningFromData
 version:        0.1.0.0
@@ -50,11 +50,13 @@ library
     , QuickCheck
     , base >=4.7 && <5
     , hmatrix
+    , hmatrix-quadprogpp
     , hspec
     , lens
     , mtl
     , random
     , split
+    , vector
   default-language: Haskell2010
 
 executable LearningFromData-exe
@@ -70,11 +72,13 @@ executable LearningFromData-exe
     , QuickCheck
     , base >=4.7 && <5
     , hmatrix
+    , hmatrix-quadprogpp
     , hspec
     , lens
     , mtl
     , random
     , split
+    , vector
   default-language: Haskell2010
 
 test-suite LearningFromData-test
@@ -91,9 +95,11 @@ test-suite LearningFromData-test
     , QuickCheck
     , base >=4.7 && <5
     , hmatrix
+    , hmatrix-quadprogpp
     , hspec
     , lens
     , mtl
     , random
     , split
+    , vector
   default-language: Haskell2010
