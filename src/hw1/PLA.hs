@@ -6,7 +6,8 @@ Weight(..),
 Point'(..),
 viewX,
 trainPLA,
-trainPLAWithInitial
+trainPLAWithInitial,
+isMisclassified
 )
 where
 import Control.Monad.Reader

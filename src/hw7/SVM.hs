@@ -8,7 +8,8 @@ replicateVectorSquared,
 makeLabelAgreementMatrix,
 makeQuadraticMatrix,
 testmatrixsize,
-alphasQuadProg
+alphasQuadProg,
+trainPLAandSVM
 )
 where
 
@@ -53,26 +54,60 @@ replicateVectorSquared v = replicateVector (size v ) v
 makeQuadraticMatrix :: Matrix R -> Vector R -> Matrix R
 makeQuadraticMatrix dataMatrix labelVector = multiplyByItself dataMatrix * makeLabelAgreementMatrix labelVector
 
+makeQuadraticMatrix' :: Matrix R -> Vector R -> Matrix R
+makeQuadraticMatrix' dataMatrix labelVector = quadMatrix + smallValtoDiag
+    where quadMatrix = makeQuadraticMatrix dataMatrix labelVector
+          smallValtoDiag = diag $ konst 0.000000001 (size labelVector) 
 -- | solves quadratic Programming on the input data matrix and label Vector
 alphasQuadProg :: Matrix R -> Vector R -> Either QuadProgPPError (Vector R, Double)
-alphasQuadProg dataMatrix labelVector = solveQuadProg (matrixA,vectorB) (Just (labelVecMatrix,zeros)) Nothing
-    where matrixA = makeQuadraticMatrix dataMatrix labelVector
-          vectorB = vector $ replicate (size labelVector) (-1)
-          labelVecMatrix = asRow labelVector
+alphasQuadProg dataMatrix labelVector = solveQuadProg (matrixA,vectorB) (Just (labelVecMatrix,zeros))(Just (idMatrix,zeros)) 
+    where matrixA = makeQuadraticMatrix' dataMatrix labelVector
+          vectorB = konst (-1) (size labelVector) 
+          labelVecMatrix = diag labelVector
+          idMatrix = ident (size labelVector) 
           zeros = konst 0 (size labelVector)
+
+-- | Creates the data matrix from a list of data points
+createDataMatrix :: [(R,R)] -> Matrix R
+createDataMatrix listOfPoints = matrix 2 listOfNumbers
+    where listOfNumbers = concat [[a,b]| (a,b)<-listOfPoints]
 
 -- | trains a perceptron wiht initial weights obtained by linear Regression
 trainPLAandSVM :: Int -> IO()
 trainPLAandSVM n = do
+    --making target function, training and testing points
+    -----------------------------------------------------
     target<-makeTargetFunction
     trainpoints <- createRandomPoints n   
-    let trainX = createMatrixX trainpoints
+    testpoints <- createRandomPoints 1000
+    let trainX = createDataMatrix trainpoints
     let trainY = createVectorY (y target) trainpoints
+    let testX = createDataMatrix testpoints
+    let testY = createVectorY (y target) testpoints
+    --Perceptron
+    ---------------------------------
     let initialWeights =  (0,0,0) 
     (finalWeights,epochs)<-trainPLAWithInitial initialWeights trainpoints target
+    
+    
+    let misclassifiedTestPoints = length $ filter (isMisclassified target finalWeights) testpoints
+    let prob = fromIntegral misclassifiedTestPoints/1000
+    --SVM
+    --------------------------
+    let quadmatrix = makeQuadraticMatrix trainX trainY
+    let labelVecMatrix = asColumn trainY
+    let alphas = alphasQuadProg trainX trainY
+    --Printing the output
+    ---------------------------
     putStrLn "Perceptron:"
+    putStrLn "-------------------------"
     putStr "Weights: "
     print finalWeights
     putStr "Epochs: "
     print epochs
+    putStr "Probability f /= g: "
+    print prob
     putStrLn "Support Vector Machine:"
+    putStrLn "-------------------------"
+    putStr "Alphas:"
+    print alphas
