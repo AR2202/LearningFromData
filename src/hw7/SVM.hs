@@ -9,7 +9,8 @@ makeLabelAgreementMatrix,
 makeQuadraticMatrix,
 testmatrixsize,
 alphasQuadProg,
-trainPLAandSVM
+trainPLAandSVM,
+countSV
 )
 where
 
@@ -57,7 +58,7 @@ makeQuadraticMatrix dataMatrix labelVector = multiplyByItself dataMatrix * makeL
 makeQuadraticMatrix' :: Matrix R -> Vector R -> Matrix R
 makeQuadraticMatrix' dataMatrix labelVector = quadMatrix + smallValtoDiag
     where quadMatrix = makeQuadraticMatrix dataMatrix labelVector
-          smallValtoDiag = diag $ konst 0.000000001 (size labelVector) 
+          smallValtoDiag = diag $ konst 0.00000000001 (size labelVector) 
 -- | solves quadratic Programming on the input data matrix and label Vector
 alphasQuadProg :: Matrix R -> Vector R -> Either QuadProgPPError (Vector R, Double)
 alphasQuadProg dataMatrix labelVector = solveQuadProg (matrixA,vectorB) (Just (labelVecMatrix,zeros))(Just (idMatrix,zeros)) 
@@ -72,7 +73,13 @@ createDataMatrix :: [(R,R)] -> Matrix R
 createDataMatrix listOfPoints = matrix 2 listOfNumbers
     where listOfNumbers = concat [[a,b]| (a,b)<-listOfPoints]
 
--- | trains a perceptron wiht initial weights obtained by linear Regression
+setSmallTo0 x
+    |x<(10**(-4)) = 0
+    |otherwise = x
+
+countSV  vector = length . filter (/= 0) $ toList vector
+
+-- | trains a perceptron and SVM
 trainPLAandSVM :: Int -> IO()
 trainPLAandSVM n = do
     --making target function, training and testing points
@@ -97,6 +104,8 @@ trainPLAandSVM n = do
     let quadmatrix = makeQuadraticMatrix trainX trainY
     let labelVecMatrix = asColumn trainY
     let alphas = alphasQuadProg trainX trainY
+    let alphasModified = fmap (cmap setSmallTo0 .fst) alphas
+    let numSVs = fmap countSV alphasModified
     --Printing the output
     ---------------------------
     putStrLn "Perceptron:"
@@ -111,3 +120,7 @@ trainPLAandSVM n = do
     putStrLn "-------------------------"
     putStr "Alphas:"
     print alphas
+    putStr "Alphas very small set ot 0:"
+    print alphasModified
+    putStr "number of SVs:"
+    print numSVs
